@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="output.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <title>title </title>
+  </head>
+  <body class="text-[#151515]">
+    <div>
+        <header class="flex justify-between items-center mr-[96px] ml-[96px] pt-8" style="height: 108px; font-family: 'Manrope', sans-serif;">
+            <!-- Logo Section -->
+            <div class="flex items-center gap-2">
+              <img src="0KJbI2VUrd6JTBMG5A36flTu4fc.webp" alt="Logo" style="width: 83.25px; height: 25px;" />
+              <button class="bg-[#F5EDE7] text-[#151515] px-4 py-2 text-sm rounded-full">We are hiring!</button>
+            </div>
+          
+            <!-- Navigation Section -->
+            <div class="flex items-center gap-8">
+              <div class="text-[14px] font-medium tracking-wider cursor-pointer nav-link"><a href="allWork.html">Work</a></div>
+              <div class="text-[14px] font-medium tracking-wider cursor-pointer nav-link">Services</div>
+              <div class="text-[14px] font-medium tracking-wider cursor-pointer nav-link">About</div>
+              <div class="text-[14px] font-medium tracking-wider cursor-pointer nav-link">Blog</div>
+          
+              <!-- Pages with Dropdown -->
+              <div class="relative group">
+                <div class="text-[14px] font-medium tracking-wider cursor-pointer nav-link">Pages▼</div>
+                <div class="absolute hidden group-hover:block top-6 bg-white text-black rounded-md shadow-lg w-32">
+                  <div class="nav-item px-4 py-2 cursor-pointer hover:bg-gray-200"><a href="index.html">Home</a></div>
+                  <div class="nav-item px-4 py-2 cursor-pointer hover:bg-gray-200">Services</div>
+                  <div class="nav-item px-4 py-2 cursor-pointer hover:bg-gray-200">Contact</div>
+                </div>
+              </div>
+          
+              <!-- Let's Talk Button -->
+              <a href="letsTalk.html"><button class="letTalk"  >
+                <span>Let's Talk</span>
+              </button></a>
+            </div>
+          </header>
+
+        <div class="contained pl-[196px] text-[80px]">
+            <p id="cvrdesc" class=" font-300px"></p>
+        </div>
+
+        <div class="contained flex pt-[96px]">
+            <div class="w-[50%] text-center">
+                <p id="worktitle" class="text-3xl"></p>
+            </div>
+            <div >
+                <p id="worklongdesc"></p>
+            </div>
+        </div>
+
+        <div class="imgContainer2 py-[180px] px-[196px]">
+            
+        </div>
+
+        <!-- contact page -->
+        <div id="contact-container"></div>
+
+        <!-- footer-->
+         <div id="footer-container"></div>"
+    </div>
+    <script>
+        
+          
+        const params = new URLSearchParams(window.location.search);
+        const anchorId = params.get("id");
+        console.log("Received ID:", anchorId);
+        
+        async function fetchdetails(id){
+            try{
+                const response = await fetch(`http://localhost:8080/api/images/details?id=${id}`);
+                if(!response.ok){
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const workdetails =await response.json();
+                const para = document.getElementById("cvrdesc").textContent=workdetails.coverDescription;
+                const para2 = document.getElementById("worktitle").textContent=workdetails.title;
+                const para3 = document.getElementById("worklongdesc").textContent=workdetails.longDescription;
+                folder_id = workdetails.folderId.replace(/\/$/, "");
+                console.log(folder_id);
+                displayWorkimages(folder_id);
+            }
+            catch(e){
+                    console.error(e);
+            }
+        }
+
+        async function displayWorkimages(id) {
+          try {
+              const response = await fetch(`http://localhost:8080/api/images/works?folderName=${id}`);
+              if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+      
+              const data = await response.json();
+              console.log("Fetched Data:", data);
+              const imageData = data.slice(1);
+              const imgContainer = document.querySelector('.imgContainer2');
+              imgContainer.innerHTML = "";
+      
+              let currentRow = null;
+              let currentPartition = null;
+              let countInRow = 0;
+      
+              imageData.forEach(image => {
+                  const partition = image.partitionType;
+                  let width = "100%";
+                  if (partition === "2") width = "50%";
+                  if (partition === "3") width = "33.33%";
+      
+                  // If partition type changes or row is full, start a new row
+                  if (!currentRow || currentPartition !== partition || 
+                      (partition === "2" && countInRow === 2) ||
+                      (partition === "3" && countInRow === 3)) {
+                      currentRow = document.createElement('div');
+                      currentRow.style.display = "flex";
+                      currentRow.style.width = "100%";
+                      currentRow.style.marginBottom = "10px";
+                      imgContainer.appendChild(currentRow);
+                      currentPartition = partition;
+                      countInRow = 0;
+                  }
+      
+                  const imgElement = document.createElement('img');
+                  imgElement.src = image.url;
+                  imgElement.alt = "Image";
+                  imgElement.style.width = width;
+                  imgElement.style.objectFit="cover";
+                  imgElement.style.padding = "5px";
+                  imgElement.style.boxSizing = "border-box";
+      
+                  currentRow.appendChild(imgElement);
+                  countInRow++;
+              });
+      
+          } catch (error) {
+              console.error("Error fetching details:", error);
+          }
+      }
+      
+      
+
+        fetchdetails(anchorId)
+
+    </script>
+    <script src="script2.js"></script>
+  </body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Images</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        h1 {
+            color: #00c8ff;
+        }
+        form {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #333;
+            color: #fff;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #00c8ff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #121212;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0099cc;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+          }
+          .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+    </style>
+</head>
+<body>
+    <h1>Upload Images to S3</h1>
+    <form id="uploadForm">
+        <label for="folderName">Select Folder:</label>
+        <select id="folderName" name="folderName">
+            <!-- options will be added dynamically here -->
+             <!-- in value field there should be the fieldId and in text it should be the title of the work-->
+        </select>
+         <div class="form-group">
+      <label>Partition Type:</label>
+      <div class="radio-group">
+        <div class="radio-option">
+          <input type="radio" id="single" name="partitionType" value="1" checked>
+          <label for="single">Single Partition</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="sameAsName" name="partitionType" value="2">
+          <label for="sameAsName">Same as Name</label>
+        </div>
+        <div class="radio-option">
+          <input type="radio" id="thirdPartition" name="partitionType" value="3">
+          <label for="thirdPartition">Third Partition</label>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="fileInputsContainer" class="form-group">
+        <!-- Default file input -->
+        <label for="file0">Upload File:</label>
+        <input type="file" name="file0" id="file0">
+        </div>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="response" class="w-[300px]">
+
+    </div>
+</body>
+</html>
+
+    
+
+    <script>
+    const radioButtons = document.querySelectorAll('input[name="partitionType"]');
+    const fileInputsContainer = document.getElementById('fileInputsContainer');
+
+    function updateFileInputs(count) {
+      fileInputsContainer.innerHTML = '';
+
+      for (let i = 0; i < count; i++) {
+        const label = document.createElement('label');
+        label.setAttribute('for', `file${i}`);
+        label.textContent = `Upload File ${i + 1}:`;
+
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.name = `file${i}`;
+        input.id = `file${i}`;
+
+        fileInputsContainer.appendChild(label);
+        fileInputsContainer.appendChild(input);
+        fileInputsContainer.appendChild(document.createElement('br'));
+      }
+    }
+
+    // Add event listener to each radio button
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', () => {
+        updateFileInputs(parseInt(radio.value));
+      });
+    });
+
+    // Initialize with default
+    updateFileInputs(1);
+
+        // for displaying field id as value inside option tag and title as Inner text
+       async function fetchFieldIds(){
+        try{
+            const response = await fetch('http://localhost:8080/api/images/idTitle');
+
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+
+              const attrbs = await response.json();
+              data = attrbs.map(item => ({
+                fieldId: item[0],
+                title: item[1]
+              }));
+              displayidTitle(data);
+
+        }catch(error){
+            //catch error
+            console.error('Error fetching images:', error);
+        }
+       }
+       function displayidTitle(data){
+             //for creating dynamic options
+            let selects = document.getElementById("folderName");
+
+            data.forEach(item =>{
+                    //yaha se kaaam suroo krna hai 
+                    let options = document.createElement("option");
+                    options.innerText = item.title;
+                    let field_id = item.fieldId.replace(/\/$/, ""); 
+                    console.log(field_id);
+                    options.value = field_id;
+                    selects.appendChild(options);
+
+            });
+            
+
+       }
+       
+       
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const folderName = document.getElementById('folderName').value;
+            const formData = new FormData();
+            formData.append('folderName', folderName);
+            const selectedPartition = document.querySelector('input[name="partitionType"]:checked').value;
+
+            let filesAdded = 0;
+            let i = 0;
+            while (true) {
+                const fileInput = document.getElementById(`file${i}`);
+                if (!fileInput) break;
+
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                    filesAdded++;
+                }
+                i++;
+            }
+            formData.append('partitionType', selectedPartition);
+
+            if (filesAdded === 0) {
+                alert('Please select at least one image to upload.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/images/upload/${folderName}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload images');
+                }
+
+                const result = await response.json();
+                document.getElementById('response').innerText = 'Uploaded successfully: ';
+            } catch (error) {
+                document.getElementById('response').innerText = 'Error: ' + error.message;
+            }
+        });
+        fetchFieldIds();
+    </script>
+</body>
+</html>
