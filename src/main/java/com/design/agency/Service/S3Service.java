@@ -3,6 +3,9 @@ package com.design.agency.Service;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -13,7 +16,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 
 import software.amazon.awssdk.regions.Region;
@@ -38,7 +41,7 @@ public class S3Service {
     public S3Service() {
         this.s3Client = S3Client.builder()
                 .region(Region.US_WEST_2) // Choose your region
-                .credentialsProvider(ProfileCredentialsProvider.create())
+                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                 .build();
     }
 
