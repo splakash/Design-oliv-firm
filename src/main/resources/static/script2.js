@@ -38,7 +38,7 @@ async function loadfooter() {
   
 async function getAllProjects(){
       try{
-          const response = await fetch('https://duotones-4cb36ca3dbe7.herokuapp.com/api/images/all');
+          const response = await fetch('https://duotones-4cb36ca3dbe7.herokuapp.com/api/all');
         
           if(!response.ok){
             throw new Error(`HTTP error! Status: ${response.status}`);

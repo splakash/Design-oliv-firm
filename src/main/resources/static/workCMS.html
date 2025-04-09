@@ -143,7 +143,7 @@
         // for displaying field id as value inside option tag and title as Inner text
        async function fetchFieldIds(){
         try{
-            const response = await fetch('https://duotones-4cb36ca3dbe7.herokuapp.com/api/images/idTitle');
+            const response = await fetch('https://duotones-4cb36ca3dbe7.herokuapp.com/api/idTitle');
 
 
             if (!response.ok) {
@@ -210,7 +210,7 @@
             }
 
             try {
-                const response = await fetch(`https://duotones-4cb36ca3dbe7.herokuapp.com/api/images/upload/${folderName}`, {
+                const response = await fetch(`https://duotones-4cb36ca3dbe7.herokuapp.com/api/upload/${folderName}`, {
                     method: 'POST',
                     body: formData
                 });
