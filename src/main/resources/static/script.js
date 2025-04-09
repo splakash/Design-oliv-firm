@@ -1,6 +1,7 @@
+const URL = 'https://duotones-4cb36ca3dbe7.herokuapp.com/';
 async function fetchImage() {
   try {
-    const response = await fetch('http://localhost:8080/api/images/coverImages');
+    const response = await fetch('https://duotones-4cb36ca3dbe7.herokuapp.com/api/images/coverImages');
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
